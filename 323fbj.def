@@ -1,0 +1,59 @@
+1	Ignition pulse missing	Wiring, tachometer, ignition coil, distributor, ECM, TCM
+2	Diesel: Engine speed (RPM) sensor - no signal	Wiring, RPM sensor
+2	Petrol: Crankshaft position (CKP) sensor/engine speed (RPM) sensor - no signal	Wiring, sensor supply voltage, CKP/RPM sensor
+3	Camshaft position (CMP) sensor - no signal	Wiring, sensor supply voltage, CMP sensor
+4	Diesel: Crankshaft position (CKP) sensor - no signal	Wiring, sensor supply voltage, CKP sensor
+4	Petrol: Crankshaft position (CKP) sensor/engine speed (RPM) sensor - no signal	Wiring, sensor supply voltage, CKP/RPM sensor 
+5	Knock sensor (KS) 	Wiring, KS
+6	Vehicle speed sensor (VSS) 	Wiring, speedometer, VSS
+8	Mass air flow (MAF) sensor/volume air flow (VAF) sensor	Wiring, MAF/VAF sensor 
+9	Engine coolant temperature (ECT) sensor	Wiring, ECT sensor
+10	Intake air temperature (IAT) sensor 	Wiring, IAT sensor
+11	Intake air temperature (IAT) sensor	Wiring, IAT sensor
+12	Throttle position (TP) sensor	Wiring, TP sensor adjustment, TP sensor
+14	Barometric pressure (BARO) sensor	Wiring, BARO sensor, ECM
+15	Except V6: Oxygen sensor (O2S)/heated oxygen sensor (HO2S) - no activity 	Intake leak, fuel pressure/pump, wiring, O2S/HO2S, injector(s), ECT sensor, MAF sensor, spark plugs
+15	V6: Heated oxygen sensor (HO2S), bank 2 - no activity	Intake leak, fuel pressure/pump, wiring, O2S/HO2S, injector(s), ECT sensor, MAF sensor, spark plugs
+16	Exhaust gas recirculation (EGR) valve position sensor	Wiring, EGR valve position sensor
+17	Except V6: Oxygen sensor (O2S)/heated oxygen sensor (HO2S) - incorrect signal	Intake leak, fuel pressure/pump, wiring, O2S/HO2S,  injector(s), ECT sensor, MAF sensor, spark plugs
+17	V6: Heated oxygen sensor (HO2S), bank 2 - incorrect signal	Intake leak, fuel pressure/pump, wiring, O2S/HO2S, injector(s), ECT sensor, MAF sensor, spark plugs
+18	Fuel quantity adjuster	Wiring, fuel quantity adjuster/position sensor
+19	Fuel quantity adjuster position sensor	Wiring, fuel quantity adjuster position sensor
+22	Fuel shut-off solenoid	Wiring, fuel shut-off solenoid
+23	Diesel: Fuel temperature sensor	Wiring, fuel temperature sensor
+23	Petrol: Heated oxygen sensor (HO2S), bank 1 - no activity	Intake leak, wiring, O2S/HO2S, injector(s), ECT sensor, MAF sensor, spark plugs
+24	Heated oxygen sensor (HO2S), bank 1 - incorrect signal	Intake leak, fuel pressure/pump, wiring, O2S/HO2S, injector(s), ECT sensor, MAF sensor, spark plugs
+25	Fuel pressure regulator control solenoid	Wiring, fuel pressure regulator control solenoid
+26	Evaporative emission (EVAP) canister purge valve	Wiring, EVAP canister purge valve
+28	Exhaust gas recirculation (EGR) solenoid - vacuum	Wiring, EGR solenoid
+29	Exhaust gas recirculation (EGR) solenoid - vent	Wiring, EGR solenoid
+34	Idle air control (IAC) valve	Wiring, IAC valve
+35	Fuel pressure regulator control solenoid 2	Wiring, fuel pressure regulator control solenoid
+36	Glow plug relay	Wiring, glow plug relay
+41	Intake manifold air control solenoid 1	Wiring, intake manifold air control solenoid
+43	Fuel injection timing sensor	Wiring, fuel injection timing sensor/solenoid
+46	Petrol: Intake manifold air control solenoid 2	Wiring, intake manifold air control solenoid
+46	Diesel: Closed throttle position (CTP) switch	Wiring, CTP switch
+49	Engine control module (ECM) - defective	ECM
+52	Module coding plug	Wiring, module coding plug
+55	Input shaft speed (ISS) sensor/turbine shaft speed (TSS) sensor	Wiring, ISS/TSS sensor 
+56	323: Engine control module (ECM) - supply voltage	Wiring, ECM
+56	626: Transmission fluid temperature (TFT) sensor	Wiring, TFT sensor
+57	Engine control relay	Wiring, engine control relay
+60	Shift solenoid (SS) A, 1-2	Wiring, SS
+61	Shift solenoid (SS) B, 2-3	Wiring, SS
+62	Shift solenoid (SS) C, 3-4	Wiring, SS
+63	Torque converter clutch (TCC) control solenoid	Wiring, TCC control solenoid
+64	Shift timing solenoid, 3-2	Wiring, shift timing solenoid
+65	Torque converter clutch (TCC) solenoid	Wiring, TCC solenoid
+66	Transmission fluid pressure (TFP) solenoid	Wiring, TFP solenoid
+67	Engine coolant blower motor relay - low temperature	Wiring, engine coolant blower motor relay
+68	Engine coolant blower motor relay - high temperature	Wiring, engine coolant blower motor relay
+69	Engine coolant blower motor temperature sensor	Wiring, engine coolant blower motor temperature sensor
+71	Engine control module (ECM)/immobilizer control module - communication error	Wiring, immobilizer control module, ECM
+72	Ignition key - not programmed into ECM	ECM incorrectly programmed/not programmed
+73	Engine control module (ECM)/immobilizer control module - immobilizer codes do not match 	Incorrectly programmed immobilizer control module/ECM 
+74	Engine control module (ECM)/immobilizer control module - ignition key codes not match 	Incorrect/damaged key, ECM incorrectly programmed
+75	Engine control module (ECM) - EEPROM error	ECM
+76	Engine control module (ECM) - immobilizer code not stored	ECM incorrectly/not programmed
+77	Immobilizer control module - communication error	Incorrect/damaged key, wiring, reader coil, immobilizer control module

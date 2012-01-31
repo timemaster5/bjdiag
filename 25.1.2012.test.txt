@@ -1,0 +1,125 @@
+Michal-MacBook-Air:bjdiag timemaster$ ./bjdiag -d -s /dev/tty.usbserial-PPUFX0CG 
+DBG: Characters readed: 0
+DBG: Characters readed: 1
+DBG: Characters readed: 2
+DBG: Characters readed: 3
+DBG: Characters readed: 4
+Setting quido .. OK
+DBG: unexpeced impulz
+DBG: pulse length: 1.181814
+DBG: long impulz
+DBG: pause length: 1.580984
+DBG: short space, continue
+DBG: pulse length: 0.383285
+DBG: short impulz
+DBG: pause length: 4.008684
+DBG: long space, new value
+DBG: Saving 11 to the index 0
+DBG: pulse length: 1.165754
+DBG: long impulz
+DBG: pause length: 1.580982
+DBG: short space, continue
+DBG: pulse length: 0.399080
+DBG: short impulz
+DBG: pause length: 0.383234
+DBG: pulse length: 0.399226
+DBG: short impulz
+DBG: pause length: 0.399363
+DBG: pulse length: 0.383196
+DBG: short impulz
+DBG: pause length: 0.399221
+DBG: pulse length: 0.383288
+DBG: short impulz
+DBG: pause length: 0.399159
+DBG: pulse length: 0.399201
+DBG: short impulz
+DBG: pause length: 0.383225
+DBG: pulse length: 0.399282
+DBG: short impulz
+DBG: pause length: 3.992568
+DBG: long space, new value
+DBG: Saving 16 to the index 1
+DBG: pulse length: 1.181704
+DBG: long impulz
+DBG: pause length: 1.565230
+DBG: short space, continue
+DBG: pulse length: 0.399210
+DBG: short impulz
+DBG: pause length: 0.399240
+DBG: pulse length: 0.383339
+DBG: short impulz
+DBG: pause length: 4.008921
+DBG: long space, new value
+DBG: Saving 12 to the index 2
+DBG: 16|12 comparation with 11|16
+DBG: pulse length: 1.165797
+DBG: long impulz
+DBG: pause length: 1.581172
+DBG: short space, continue
+DBG: pulse length: 0.399333
+DBG: short impulz
+DBG: pause length: 0.383257
+DBG: pulse length: 0.399289
+DBG: short impulz
+DBG: pause length: 0.383175
+DBG: pulse length: 0.399321
+DBG: short impulz
+DBG: pause length: 0.399113
+DBG: pulse length: 0.383375
+DBG: short impulz
+DBG: pause length: 0.399227
+DBG: pulse length: 0.399216
+DBG: short impulz
+DBG: pause length: 0.383347
+DBG: pulse length: 0.399217
+DBG: short impulz
+DBG: pause length: 0.383258
+DBG: pulse length: 0.399324
+DBG: short impulz
+DBG: pause length: 8.001445
+DBG: long space, new value
+DBG: Saving 17 to the index 3
+DBG: 16|12 comparation with 11|16
+DBG: 12|17 comparation with 11|16
+DBG: pulse length: 1.181808
+DBG: long impulz
+DBG: pause length: 1.565205
+DBG: short space, continue
+DBG: pulse length: 0.399185
+DBG: short impulz
+DBG: pause length: 3.992668
+DBG: long space, new value
+DBG: Saving 11 to the index 4
+DBG: 16|12 comparation with 11|16
+DBG: 12|17 comparation with 11|16
+DBG: 17|11 comparation with 11|16
+DBG: pulse length: 1.181759
+DBG: long impulz
+DBG: pause length: 1.565136
+DBG: short space, continue
+DBG: pulse length: 0.399256
+DBG: short impulz
+DBG: pause length: 0.383295
+DBG: pulse length: 0.399108
+DBG: short impulz
+DBG: pause length: 0.399395
+DBG: pulse length: 0.383198
+DBG: short impulz
+DBG: pause length: 0.399193
+DBG: pulse length: 0.399311
+DBG: short impulz
+DBG: pause length: 0.383242
+DBG: pulse length: 0.399217
+DBG: short impulz
+DBG: pause length: 0.383282
+DBG: pulse length: 0.399352
+DBG: short impulz
+DBG: pause length: 3.992659
+DBG: long space, new value
+DBG: Saving 16 to the index 5
+DBG: 16|12 comparation with 11|16
+DBG: 12|17 comparation with 11|16
+DBG: 17|11 comparation with 11|16
+DBG: 11|16 comparation with 11|16
+11 16 12 17 
+Michal-MacBook-Air:bjdiag timemaster$ 
