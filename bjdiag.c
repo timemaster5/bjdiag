@@ -18,7 +18,6 @@
 
 
 #include "include.h"
-
 //serial link settings
 void serline(){
   fd = open (xSerDev, O_RDWR | O_NOCTTY | O_NONBLOCK ); 
