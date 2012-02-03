@@ -69,24 +69,21 @@ char *sendcommand(char *ggt){
   return msg; 
 } 
 
-
 // usage screen -h
 void usage(){
   
-  printf ("Usage:  bjdiag [ -s path ] COMMAND\n\n");
-
-  printf ("  -s:  serial port path,   default is: %s\n",xSerDev);
-    printf ("COMMANDS\n");
-  printf ("  -c:  your own command\n");
-  
-    printf ("OUTPUT\n");
-    printf ("  -d:   debug mode\n");
-  printf ("  -?,-h,--help:    print this message\n");
+  printf ("Usage:  bjdiag [ -p port_path ] MODE\n\n");
+  printf ("MODES\n");
+  printf ("  -a,--abs\t:\tabs diagnostic mode\n");
+  printf ("  -e,--engine\t:\tengine diagnostic mode (default)\n\n");
+  printf ("SETTINGS\n");
+  printf ("  -p,--port\t:\tserial port path, default is: %s\n\n",xSerDev); 
+  printf ("OUTPUT\n");
+  printf ("  -d [level]\t:\tdebug mode\n");
+  printf ("  -h,--help\t:\tprint this message\n");
 
   return;
 }
-
-
 void tm_start(){ 
   clock_gettime(CLOCK_MONOTONIC,&t1);
   run=1;
@@ -165,20 +162,57 @@ void bugs(int code){
 }
 
 //main function
-int main(int argc, char *argv[]){
-int j;
-  //startup arguments testing
-  if (argc == 1) {usage(); stop=1;}
-  for (j=0;j<argc;j++){
-    if(!strcmp(argv[j],"-s")) {if (argv[j+1]) xSerDev = argv[j+1]; 
-                                else {stop=1; usage();}}
-    if(!strcmp(argv[j],"-c")) {if (argv[j+1]) comm = argv[j+1]; 
-                                else {stop=1; usage();}}
-    if(!strcmp(argv[j],"-?")) {stop=1;usage();}
-    if(!strcmp(argv[j],"-d")) {debug=1;}
-    } 
-  //stop if ve haven't got some argument
-  if (stop) return 0;
+int main(int argc, char **argv){
+   int sw;
+   while (1) {
+        int option_index = 0;
+        static struct option long_options[] = {
+            {"abs",     no_argument, 	   0,  'a' },
+            {"engine",  no_argument,       0,  'e' },
+            {"help",    no_argument,	   0,  'h' },
+            {"debug",   required_argument, 0,  'd' },
+            {"port",    required_argument, 0,  'p' },
+            {0,         0,                 0,  0 }
+        };
+
+       sw = getopt_long(argc, argv, "d:p:aeh",
+                 long_options, &option_index);
+        if (sw == -1)
+            break;
+
+       switch (sw) {
+       case 'e':
+            engine=1;
+            ab=0;
+            break;
+
+       case 'd':
+            debug = atoi(optarg);
+            break;
+
+       case 'p':
+            xSerDev = optarg;        
+	    break;
+
+       case 'a':
+            ab=1;
+            engine=0;
+            break;
+       case 'h':
+            usage();
+            break;
+        }
+    }
+
+   if (optind < argc) {
+        printf("Unknown options : ");
+        while (optind < argc)
+            printf("%s ", argv[optind++]);
+        printf("\n");
+    }
+   //write some garbage to stdout 
+   if (debug)printf("DBG: starting with debug level : %i\n",debug);
+   if (debug)printf("DBG: setting port to : %s\n",xSerDev);
   //serial line start
   //TODO set serial to original values on every end of program
   serline();

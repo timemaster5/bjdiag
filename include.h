@@ -13,6 +13,7 @@
 #include <signal.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <getopt.h>
 
 #if defined(__APPLE__) && defined(__MACH__)
 /* OS X doesn't support clock_gettime (in at least OSX <= 10.6) */
@@ -32,7 +33,7 @@
 struct timespec t1,t2; //citace
 struct termios oldtio,newtio; //tohle pro sockety
 double tmr;
-int stop=0,debug=0,run=0,imp=1,idx=0; //debug defaultne vypnut,index pole na 0
+int stop=0,debug=0,run=0,imp=1,idx=0,ab=0,engine=1; //debug defaultne vypnut,index pole na 0
 int inputmotor=1;
 int bugcode; //nacteny kod chyby
 int fd, res; //seriak
