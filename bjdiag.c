@@ -181,37 +181,52 @@ double timer(){
 void configure(int control){
     //control = 0 - for engine diagnostic
     //control = 1 - for abs diagnostic
+    //control = 2 - deconfigure
     //serial line start
-   serline(1); //open serial port
-   
-   printf("Configuring quido module ");
-   fflush(stdout);
-  //set quido auto send, R1 ON
-   if (!strcmp(sendcmd("*B1IS1"),"OK")){
-       if (debug>1) printf("\nDBG: Set autosend feature of quido\n");
-       else printf(".");
-       fflush(stdout);
-       if (!strcmp(sendcmd("*B1OS1L"),"OK")){
-           if (debug>1) printf("DBG: Set R1 to open state\n");
-           else printf(".");
+    switch  (control){
+       case 0:
+       case 1:
+           serline(1); //open serial port
+           printf("Configuring quido module ");
            fflush(stdout);
-           if (!strcmp(sendcmd("*B1OS2L"),"OK")) {
-               if (debug>1) printf("DBG: Set R2 to open state\n");
+           //set quido auto send, R1 ON
+           if (!strcmp(sendcmd("*B1IS1"),"OK")){
+               if (debug>1) printf("\nDBG: Set autosend feature of quido\n");
                else printf(".");
                fflush(stdout);
-               if (control) 
-                   if (!strcmp(sendcmd("*B1OS2H"),"OK")){
-                        if (debug>1) printf("DBG: Set R2 to closed state\n");
-                        else printf(". DONE\n");}
-                   else fprintf(stderr,"ERR: Unable to set output 1\n");
-               else
-                   if (!strcmp(sendcmd("*B1OS1H"),"OK")){
-                        if (debug>1) printf("DBG: Set R1 to closed state\n");
-                        else printf(". DONE\n");}
-                  else fprintf(stderr,"ERR: Unable to set output 1\n");}
-           else fprintf(stderr,"ERR: Unable to reset output 2\n");} 
-       else fprintf(stderr,"ERR: Unable to set output 1\n");}
-   else fprintf(stderr,"ERR: Unable to set quido for auto send\n"); 
+               if (!strcmp(sendcmd("*B1OS1L"),"OK")){
+                   if (debug>1) printf("DBG: Set R1 to open state\n");
+                   else printf(".");
+                   fflush(stdout);
+                   if (!strcmp(sendcmd("*B1OS2L"),"OK")) {
+                       if (debug>1) printf("DBG: Set R2 to open state\n");
+                       else printf(".");
+                       fflush(stdout);
+                       if (control) 
+                           if (!strcmp(sendcmd("*B1OS2H"),"OK")){
+                                   if (debug>1) printf("DBG: Set R2 to closed state\n");
+                                   else printf(". DONE\n");}
+                          else fprintf(stderr,"ERR: Unable to set output 1\n");
+                      else
+                          if (!strcmp(sendcmd("*B1OS1H"),"OK")){
+                                  if (debug>1) printf("DBG: Set R1 to closed state\n");
+                                  else printf(". DONE\n");}
+                          else fprintf(stderr,"ERR: Unable to set output 1\n");}
+                  else fprintf(stderr,"ERR: Unable to reset output 2\n");} 
+               else fprintf(stderr,"ERR: Unable to set output 1\n");}
+           else fprintf(stderr,"ERR: Unable to set quido for auto send\n");         
+           break;
+       case 2:
+           if (!strcmp(sendcmd("*B1OS1L"),"OK")){
+               if (debug>1) printf("DBG: Set R1 to open state\n");
+               if (!strcmp(sendcmd("*B1OS2L"),"OK")){
+                   if (debug>1) printf("DBG: Set R2 to open state\n");
+               }else fprintf(stderr,"ERR: Unable to set output 2\n");
+           }else fprintf(stderr,"ERR: Unable to set output 1\n");
+           serline(0);
+           break;
+   }
+   
 }
 
 //mozna smazat, jeste nevim
@@ -277,14 +292,17 @@ int main(int argc, char **argv){
     //parse command line options
     switch (opts(argc, argv)){
         case 0 : //engine (default) mode
-            configure(0); 
+            configure(0); //open serial, configure module
+            deffile(1); //open definition file
             //engine reading routine here
             
             deffile(0); //close deffile
-            serline(0); //close serial port
+            configure(2); //deconfigure
             break;
         case 1: //abs mode
-            configure(1);
+            configure(1); //open serial, configure module
+            deffile(2); //open definition file
+            
             char line[5];
             int bugcode;
             printf("Please type bug number and press ENTER\n"
@@ -294,13 +312,14 @@ int main(int argc, char **argv){
                 sscanf(line,"%d",&bugcode);
                 if (line[1]==0){
                     break;}
-                else {   
+                else {
                     showbug(bugcode);}
                 printf(": "); 
                 bzero(line,strlen(line));
             }
+            
             deffile(0); //close deffile
-            serline(0); //close serial port
+            configure(2); //deconfigure module, close serial
             break;}
     
  

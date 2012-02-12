@@ -12,7 +12,7 @@ HOSTCFLAGS   = -Wall -O2 -fomit-frame-pointer
 
 
 all:	bjdiag.c
-	$(HOSTCC)  bjdiag.c $(HOSTCFLAGS) -lrt -o bjdiag
+	$(HOSTCC)  bjdiag.c $(HOSTCFLAGS)  -o bjdiag
 
 clean:
 	rm bjdiag
