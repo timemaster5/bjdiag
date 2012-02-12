@@ -33,16 +33,12 @@
 struct timespec t1,t2; //citace
 struct termios oldtio,newtio; //tohle pro sockety
 double tmr;
-int stop=0,debug=0,run=0,imp=1,idx=0,ab=0,engine=1; //debug defaultne vypnut,index pole na 0
+int stop=0,debug=0,run=0,imp=1,idx=0; //debug defaultne vypnut,index pole na 0
 int inputmotor=1;
-int bugcode; //nacteny kod chyby
 int fd, res; //seriak
-int ret=0; //defaultne konci program bez chyby
-char *result;
 char *xSerDev = MODEMDEVICE; // do xSerDev se ulozi cesta k seriovemu portu z definici
-char *comm;
 char *tosend = NULL; //sem se uklada text,ktery se nasledne odesila k vypsani
-char *defFile = "323fbj.def";
-int bugcodes[BUGSIZE]; // pole chybovych kodu
+char *defFileEng = "323fbj.def";
+char *defFileAbs = "323fbj.def";
 char msg[BUFSIZE]; //vytvori pole o velikosti BUFSIZE, ukladaji se sem docasne odpovedi
-char c; //cteni seriaku
+FILE *df;
