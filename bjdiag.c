@@ -30,12 +30,14 @@ void serline(int control){
             fprintf(stderr,"ERR: Unable to open serial port %s\n",xSerDev);
             exit(1);}
         else {
+            if (debug) 
+               printf("DBG: Serial port opened\n");
             //save old serial parameters
             tcgetattr(fd, &oldtio);
             //set new parameters
             fcntl( fd, F_SETFL, O_SYNC); 
             memset( &newtio, 0, sizeof( newtio ));
-            newtio.c_cflag = (  CS8 | CLOCAL | CREAD);
+            newtio.c_cflag = ( BAUDRATE | CS8 | CLOCAL | CREAD);
             newtio.c_iflag = (IGNPAR);
             newtio.c_oflag = 0;
             newtio.c_lflag = 0;
@@ -44,10 +46,7 @@ void serline(int control){
             newtio.c_ispeed = BAUDRATE;
             newtio.c_ospeed = BAUDRATE;
             tcsetattr( fd, TCSANOW, &newtio );
-            tcflush( fd, TCIOFLUSH );
-            if (debug) 
-                printf("DBG: Serial port opened\n");
-            }} 
+            tcflush( fd, TCIOFLUSH );}} 
     else { 
         //set original values of serial line
         if (debug) 
