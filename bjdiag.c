@@ -18,154 +18,100 @@
 
 
 #include "include.h"
-//serial link settings
-void serline(){
-  fd = open (xSerDev, O_RDWR | O_NOCTTY | O_NONBLOCK ); 
-  if (fd <0) {perror(xSerDev); exit(-1); }
-  tcgetattr(fd, &oldtio);
-  fcntl( fd, F_SETFL, O_SYNC); 
 
-  // serial link parameters
-  memset( &newtio, 0, sizeof( newtio ));
-  newtio.c_cflag = (  CS8 | CLOCAL | CREAD);
-  newtio.c_iflag = (IGNPAR);
-  newtio.c_oflag = 0;
-  newtio.c_lflag = 0;
-  newtio.c_cc[VMIN] = 1;
-  newtio.c_cc[VTIME] = 1;
-  newtio.c_ispeed = BAUDRATE;
-  newtio.c_ospeed = BAUDRATE;
-  tcsetattr( fd, TCSANOW, &newtio );
-  tcflush( fd, TCIOFLUSH );
+//serial port
+void serline(int control){
+    //control = 0 = close port
+    //control = 1 = open port
+    
+    if (control) {
+        fd = open (xSerDev, O_RDWR | O_NOCTTY | O_NONBLOCK ); 
+        if(fd<0) {
+            fprintf(stderr,"ERR: Unable to open serial port %s\n",xSerDev);
+            exit(1);}
+        else {
+            if (debug) 
+                printf("DBG: Serial port opened\n");
+            //save old serial parameters
+            tcgetattr(fd, &oldtio);
+            //set new parameters
+            fcntl( fd, F_SETFL, O_SYNC); 
+            memset( &newtio, 0, sizeof( newtio ));
+            newtio.c_cflag = (  CS8 | CLOCAL | CREAD);
+            newtio.c_iflag = (IGNPAR);
+            newtio.c_oflag = 0;
+            newtio.c_lflag = 0;
+            newtio.c_cc[VMIN] = 1;
+            newtio.c_cc[VTIME] = 1;
+            newtio.c_ispeed = BAUDRATE;
+            newtio.c_ospeed = BAUDRATE;
+            tcsetattr( fd, TCSANOW, &newtio );
+            tcflush( fd, TCIOFLUSH );}} 
+    else { 
+        //set original values of serial line
+        if (debug) 
+            printf("DBG: closing serial port\n");
+        tcsetattr(fd,TCSANOW,&oldtio);
+        tcflush( fd, TCIOFLUSH );
+        close(fd);} // bacha, nemuzeme zavirat a nastavovat zpet seriak pokud jsme ho predtim neotevreli
 }
 
+//pointers for definition files
+void deffile(int control){
+    //control = 0 = close deffile
+    //control = 1 = open deffile for engine
+    //control = 2 = open deffile for abs
+    char* dfile = defFileEng;
+    switch (control) { 
+        case 0:
+            if (debug) 
+                printf("DBG: closing deffile\n");
+            fclose(df);
+            break;
+        case 2:
+            dfile = defFileAbs;
+        default:
+            df = fopen(dfile, "r");
+            if(!df) { 
+                fprintf(stderr,"ERR: Unable to open definition file %s\n",dfile); 
+                exit(1);} 
+            else {
+                if (debug)
+                        printf("DBG: Definition file  %s opened\n",dfile);}
+            break;}   
+}
 
-char *sendcommand(char *ggt){
-  int cnt=0;
-  bzero(msg,BUFSIZE);
-  tosend = strdup(ggt);
-  strcat(tosend, "\r\n");
-  res = write (fd, tosend, strlen(tosend));
-
-  if( res < 0 ){
-    perror( "Write" );
-    exit(1);
-  }
-  bzero(msg,BUFSIZE);
-  while (c!='\r'){ 
-    if (read(fd,&c,1)>0)        
-    strncat(msg, &c, 1);
-     if (debug) printf("DBG: Characters readed: %d\n",cnt);  
-    cnt+=1;
-    if (cnt > BUFSIZE ) {
-      if (debug) fprintf(stderr,"DBG: ERROR! increase BUFSIZE and recompile\n"); 
-      ret=2;
-      break;
-    }  
-  }
-  if (!strcmp(msg,"*B10\r")) { //if good anser
-    bzero(msg,BUFSIZE);  
-    strcat(msg, "OK");
-  }
-  return msg; 
-} 
+char *sendcmd(char *in){
+    int cnt=0;
+    char c; 
+    
+    tosend = strdup(in);
+    strcat(tosend, "\r\n");
+    res = write (fd, tosend, strlen(tosend));
+    if( res < 0 ){
+        fprintf(stderr,"ERR: Unable to write to the serial port \n"); 
+        exit(1);}
+    bzero(msg,BUFSIZE);
+    while (c !='\r'){
+        if (read(fd,&c,1)>0)
+           strncat(msg, &c, 1);
+        cnt+=1;
+        if (cnt > BUFSIZE ) {
+           fprintf(stderr,"ERR: increase BUFSIZE and recompile\n"); 
+           exit(2);}} //buffer owerflow  
+    if (!strcmp(msg,"*B10\r")) { //if good answer
+        bzero(msg,BUFSIZE); 
+        strcat(msg, "OK");}
+    sleep(1);
+    return msg; 
+}
 
 // usage screen -h
-void usage(){
-  
-  printf ("Usage:  bjdiag [ -p port_path ] MODE\n\n");
-  printf ("MODES\n");
-  printf ("  -a,--abs\t:\tabs diagnostic mode\n");
-  printf ("  -e,--engine\t:\tengine diagnostic mode (default)\n\n");
-  printf ("SETTINGS\n");
-  printf ("  -p,--port\t:\tserial port path, default is: %s\n\n",xSerDev); 
-  printf ("OUTPUT\n");
-  printf ("  -d [level]\t:\tdebug mode\n");
-  printf ("  -h,--help\t:\tprint this message\n");
-
-  return;
-}
-void tm_start(){ 
-  clock_gettime(CLOCK_MONOTONIC,&t1);
-  run=1;
-  return;
-}
-
-double tm_stop(){
-    if(run) {
-  clock_gettime(CLOCK_MONOTONIC, &t2);
-  run=0;
-  return ((double)(t2.tv_sec - t1.tv_sec) + 1.e-9*(t2.tv_nsec - t1.tv_nsec));
-    }else return 0;
-}
-
-void clean(){
-  if (debug) printf("DBG: answer: %s\n",msg);
-  bzero(msg,BUFSIZE); //clear mesage buffer
-}
-
-int showbug(char num[]){
-   char str[200];
-   FILE *fp;
- 
-   fp = fopen(defFile, "r");
-   if(!fp) {printf("je to v riti\n"); return 1;} // bail out if file not found
-   while(fgets(str,sizeof(str),fp) != NULL)
-   {
-     // strip trailing '\n' if it exists
-     int len = strlen(str)-1;
-     if(str[len] == '\n') 
-        str[len] = 0;
-	char*    del = "\t";
-	char* record = strtok (str, del);
-	int index=0;
- 	while (record) {
-		if (!strcmp(record,num)) {printf("Cislo chyby: %s\n",record);index=1;} 
-		if (index==2) printf("Chyba: %s \n",record);
-		if (index==3) printf("Predpokladana pricina: %s\n",record);
-		if (index) index++;
-		record = strtok(NULL, del);
-   		}
-   }
-   fclose(fp);
-return 0;
-}
-
-void bugs(int code){
-  bugcodes[idx]=code; //save bugcode
-  char bugnum[3];
-  if (debug) printf("DBG: Saving %i to the index %i\n",bugcodes[idx],idx);
-  if (idx > 1) { //if we have more then two values, we test whether the end
-    int cnt=0,cnt2=1,last=0;
-    for (cnt=1; cnt<idx; cnt++) { 
-      cnt2++; if (debug) printf("DBG: %i|%i comparation with %i|%i\n",
-              bugcodes[cnt],bugcodes[cnt2],bugcodes[0],bugcodes[1]);
-      if((bugcodes[0] == bugcodes[cnt]) && (bugcodes[1] == bugcodes[cnt2])) {
-        last=cnt;
-      }
-                        
-    }
-    if (last) 
-      for (cnt = 0; cnt < last; cnt++) { //print bugs
-        printf("%i ",bugcodes[cnt]);
-        if (cnt==last-1) printf("\n");
-        stop=1;
-      }
-    //if the two values are equal, we have only one bug
-  } else if ((idx==1)&&(bugcodes[0]==bugcodes[1])){  
-//      printf("%i \n",bugcodes[0]); 
-      sprintf(bugnum, "%i", bugcodes[0]);
-      showbug(bugnum);
-      printf("chyba cislo: %i\n",bugcodes[0]);
-      stop=1; 
-    } 
-  idx++;  //increase index
-}
-
-//main function
-int main(int argc, char **argv){
-   int sw;
-   while (1) {
+int opts(int argc, char** argv){
+    //return 0 - engine diagnostic
+    //return 1 - abs diagnostic
+    int sw,ret=0;
+    while (1) {
         int option_index = 0;
         static struct option long_options[] = {
             {"abs",     no_argument, 	   0,  'a' },
@@ -173,64 +119,218 @@ int main(int argc, char **argv){
             {"help",    no_argument,	   0,  'h' },
             {"debug",   required_argument, 0,  'd' },
             {"port",    required_argument, 0,  'p' },
-            {0,         0,                 0,  0 }
-        };
+            {0,         0,                 0,  0 }};
 
-       sw = getopt_long(argc, argv, "d:p:aeh",
+        sw = getopt_long(argc, argv, "d:p:aeh",
                  long_options, &option_index);
         if (sw == -1)
             break;
 
-       switch (sw) {
-       case 'e':
-            engine=1;
-            ab=0;
-            break;
+        switch (sw) {
+            case 'e':
+                ret = 0;
+                break;
 
-       case 'd':
-            debug = atoi(optarg);
-            break;
+            case 'd':
+                debug = atoi(optarg);
+                printf("DBG: starting with debug level : %i\n",debug);
+                break;
 
-       case 'p':
-            xSerDev = optarg;        
-	    break;
+            case 'p':
+                xSerDev = optarg;
+                break;
 
-       case 'a':
-            ab=1;
-            engine=0;
-            break;
-       case 'h':
-            usage();
-            break;
-        }
-    }
+            case 'a':
+                ret = 1;
+                break;
+            case 'h':
+            default : 
+                printf ("Usage:  bjdiag [ -p port_path ] MODE\n\n");
+                printf ("MODES\n");
+                printf ("  -a,--abs\t:\tabs diagnostic mode\n");
+                printf ("  -e,--engine\t:\tengine diagnostic mode (default)\n\n");
+                printf ("SETTINGS\n");
+                printf ("  -p,--port\t:\tserial port path, default is: %s\n\n",xSerDev); 
+                printf ("OUTPUT\n");
+                printf ("  -d [level]\t:\tdebug mode\n");
+                printf ("  -h,--help\t:\tprint this message\n");
+                if (optind < argc) {
+                    printf("Unknown options : ");
+                    while (optind < argc)
+                        printf("%s ", argv[optind++]);
+                    printf("\n");}
+                exit(0);
+                break;}}
+    if (debug)
+        printf("DBG: serial port is : %s\n",xSerDev);
+    return ret;
+}
 
-   if (optind < argc) {
-        printf("Unknown options : ");
-        while (optind < argc)
-            printf("%s ", argv[optind++]);
-        printf("\n");
-    }
-   //write some garbage to stdout 
-   if (debug)printf("DBG: starting with debug level : %i\n",debug);
-   if (debug)printf("DBG: setting port to : %s\n",xSerDev);
-  //serial line start
-  //TODO set serial to original values on every end of program
-  serline();
+double timer(){
+    if(run) {
+        clock_gettime(CLOCK_MONOTONIC, &t2);
+        run=0;
+        return ((double)(t2.tv_sec - t1.tv_sec) + 
+                 + 1.e-9*(t2.tv_nsec - t1.tv_nsec));}
+    else {
+        clock_gettime(CLOCK_MONOTONIC,&t1);
+        run=1;
+        return 0;}
+}
+
+void configure(int control){
+    //control = 0 - for engine diagnostic
+    //control = 1 - for abs diagnostic
+    //serial line start
+   serline(1); //open serial port
+   
+   //open definition file
+   if (control) deffile(3); 
+   else deffile(1);
+   
+   printf("Configuring quido module ");
+   fflush(stdout);
+  //set quido auto send, R1 ON
+   if (!strcmp(sendcmd("*B1IS1"),"OK")){
+       if (debug>1) printf("\nDBG: Set autosend feature of quido\n");
+       else printf(".");
+       fflush(stdout);
+       if (!strcmp(sendcmd("*B1OS1L"),"OK")){
+           if (debug>1) printf("DBG: Set R1 to open state\n");
+           else printf(".");
+           fflush(stdout);
+           if (!strcmp(sendcmd("*B1OS2L"),"OK")) {
+               if (debug>1) printf("DBG: Set R2 to open state\n");
+               else printf(".");
+               fflush(stdout);
+               if (control) 
+                   if (!strcmp(sendcmd("*B1OS2H"),"OK")){
+                        if (debug>1) printf("DBG: Set R2 to closed state\n");
+                        else printf(". DONE\n");}
+                   else fprintf(stderr,"ERR: Unable to set output 1\n");
+               else
+                   if (!strcmp(sendcmd("*B1OS1H"),"OK")){
+                        if (debug>1) printf("DBG: Set R1 to closed state\n");
+                        else printf(". DONE\n");}
+                  else fprintf(stderr,"ERR: Unable to set output 1\n");}
+           else fprintf(stderr,"ERR: Unable to reset output 2\n");} 
+       else fprintf(stderr,"ERR: Unable to set output 1\n");}
+   else fprintf(stderr,"ERR: Unable to set quido for auto send\n"); 
+}
+
+//mozna smazat, jeste nevim
+void clean(){
+    if (debug) printf("DBG: answer: %s\n",msg);
+    bzero(msg,BUFSIZE); //clear mesage buffer
+}
+
+void showbug(int in){
+    char str[200],num[10];
+    int errsw=1;
+    rewind(df);
+    snprintf(num, sizeof(num), "%d", in);
+    while(fgets(str,sizeof(str),df) != NULL){
+        // strip trailing '\n' if it exists
+        int len = strlen(str)-1;
+        if(str[len] == '\n') 
+            str[len] = 0;
+        char*    del = "\t";
+        char* record = strtok (str, del);
+        int index=0;
+        while (record) {
+            if (!strcmp(record,num)) {
+                printf("Bug number: %s\n",record);index=1,errsw=0;}
+            if (index==2) printf("Bug definition: %s \n",record);
+            if (index==3) printf("Possible cause: %s\n",record);
+            if (index) index++;
+            record = strtok(NULL, del);}
+    }if (errsw) printf("Takova chyba neexistuje\n");
+}
+
+void bugs(int in){
+    int bugcodes[BUGSIZE]; // pole chybovych kodu
+    bugcodes[idx]=in; //save bugcode
+    if (debug) 
+        printf("DBG: Saving %i to the index %i\n",bugcodes[idx],idx);
+    if (idx > 1) { //if we have more then two values, we test whether the end
+        int cnt=0,cnt2=1,last=0;
+        for (cnt=1; cnt<idx; cnt++) { 
+            cnt2++;
+            if (debug) 
+                printf("DBG: %i|%i comparation with %i|%i\n",
+                bugcodes[cnt],bugcodes[cnt2],bugcodes[0],bugcodes[1]);
+            if((bugcodes[0] == bugcodes[cnt]) && 
+               (bugcodes[1] == bugcodes[cnt2])) {
+                last=cnt;}}
+        if (last) 
+        for (cnt = 0; cnt < last; cnt++) { //print bugs
+            printf("%i ",bugcodes[cnt]);
+            if (cnt==last-1) 
+                printf("\n");
+            stop=1;}}
+        //if the two values are equal, we have only one bug
+    else if ((idx==1)&&(bugcodes[0]==bugcodes[1])){  
+        showbug(bugcodes[0]);
+        printf("Bug number : %i\n",bugcodes[0]);
+        stop=1;}
+    idx++;  //increase index
+}
+
+//main function
+int main(int argc, char **argv){
+    //parse command line options
+    switch (opts(argc, argv)){
+        case 0 : //engine (default) mode
+            configure(0); 
+            //engine reading routine here
+            
+            deffile(0); //close deffile
+            serline(0); //close serial port
+            break;
+        case 1: //abs mode
+          //  configure(1);
+            deffile(2);
+            char line[5];
+           int bugcode;
+            printf("Please type bug number's separated by ENTER or "
+                    "send empty line to proceed\n: ");
+            while (1){
+                fgets(line,sizeof(line),stdin);
+                sscanf(line,"%d",&bugcode);
+                    if (line[1]==0){
+                        break;}
+                    else {   
+                        showbug(bugcode);
+                    }
+                    printf("\n: "); 
+                    bzero(line,strlen(line));
+            }
+            deffile(0); //close deffile
+            //serline(0); //close serial port
+            break;}
+    
+ 
+    
+    
+   
+    
+                
+  //printf("Please turn ignition key to the position ON without "
+    //      "starting the engine\n");
   
-   if (comm)  { printf("%s\n",sendcommand(comm)); stop=1;}
-  //set quido
-  printf("Setting quido .. %s\n",sendcommand("*B1IS1"));
-  while (!stop) {
+  char c;
+  int bugcode;
+  //while (!stop) {
+  while (0){
       if (read(fd,&c,1)>0)
     strncat(msg, &c, 1);
       if (c == '\r') { //if there is an end of the line
         if (!strncmp(msg,"*B1D",4)) {
             if ((msg[inputmotor+4]=='H')&&(imp==1)) {
                 imp=0;
-                tmr=tm_stop(); //mezera mezi impulzy, kdyz nebezel timer tak 0
+                tmr=timer(); //mezera mezi impulzy, kdyz nebezel timer tak 0
                 if ((debug)&&(tmr)) printf("DBG: pause length: %f\n",tmr); 
-                if (!run)  tm_start();
+                if (!run) timer();//tm_start()
                 if(tmr > 2.5) {
                     if (debug) printf("DBG: long space, new value\n");
                     bugs(bugcode);//save the value
@@ -241,9 +341,9 @@ int main(int argc, char **argv){
                 }
             else if((msg[inputmotor+4]=='L')&&(imp==0)){
                 imp=1;
-                tmr=tm_stop();
+                tmr=timer();
                 if ((debug)&&(tmr)) printf("DBG: pulse length: %f\n",tmr);
-                if (!run) tm_start(); //zde je celkovy cas impulzu,zde vlozime porovnani
+                if (!run) timer(); //tm_start
                    if (tmr > 1) { 
                         if (debug) printf("DBG: long impulz\n"); //new value
                         bugcode=bugcode+10;
@@ -254,10 +354,6 @@ int main(int argc, char **argv){
                   }else if (debug) printf("DBG: unexpeced impulz\n");
         }bzero(msg,BUGSIZE);    
         }
-        }    
-//set original values of serial line
-tcsetattr(fd,TCSANOW,&oldtio);
-tcflush( fd, TCIOFLUSH );
-close(fd);
-return ret;
+        }   
+return 0;
 }
