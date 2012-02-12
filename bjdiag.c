@@ -30,8 +30,6 @@ void serline(int control){
             fprintf(stderr,"ERR: Unable to open serial port %s\n",xSerDev);
             exit(1);}
         else {
-            if (debug) 
-                printf("DBG: Serial port opened\n");
             //save old serial parameters
             tcgetattr(fd, &oldtio);
             //set new parameters
@@ -46,14 +44,17 @@ void serline(int control){
             newtio.c_ispeed = BAUDRATE;
             newtio.c_ospeed = BAUDRATE;
             tcsetattr( fd, TCSANOW, &newtio );
-            tcflush( fd, TCIOFLUSH );}} 
+            tcflush( fd, TCIOFLUSH );
+            if (debug) 
+                printf("DBG: Serial port opened\n");
+            }} 
     else { 
         //set original values of serial line
         if (debug) 
             printf("DBG: closing serial port\n");
         tcsetattr(fd,TCSANOW,&oldtio);
         tcflush( fd, TCIOFLUSH );
-        close(fd);} // bacha, nemuzeme zavirat a nastavovat zpet seriak pokud jsme ho predtim neotevreli
+        close(fd);} 
 }
 
 //pointers for definition files
@@ -84,7 +85,6 @@ void deffile(int control){
 char *sendcmd(char *in){
     int cnt=0;
     char c; 
-    
     tosend = strdup(in);
     strcat(tosend, "\r\n");
     res = write (fd, tosend, strlen(tosend));
@@ -184,10 +184,6 @@ void configure(int control){
     //serial line start
    serline(1); //open serial port
    
-   //open definition file
-   if (control) deffile(3); 
-   else deffile(1);
-   
    printf("Configuring quido module ");
    fflush(stdout);
   //set quido auto send, R1 ON
@@ -239,12 +235,12 @@ void showbug(int in){
         int index=0;
         while (record) {
             if (!strcmp(record,num)) {
-                printf("Bug number: %s\n",record);index=1,errsw=0;}
-            if (index==2) printf("Bug definition: %s \n",record);
-            if (index==3) printf("Possible cause: %s\n",record);
+                printf("Bug number\t: %s\n",record);index=1,errsw=0;}
+            if (index==2) printf("Bug definition\t: %s \n",record);
+            if (index==3) printf("Possible cause\t: %s\n",record);
             if (index) index++;
             record = strtok(NULL, del);}
-    }if (errsw) printf("Takova chyba neexistuje\n");
+    }if (errsw) printf("Unknown bug number\n");
 }
 
 void bugs(int in){
@@ -288,25 +284,23 @@ int main(int argc, char **argv){
             serline(0); //close serial port
             break;
         case 1: //abs mode
-          //  configure(1);
-            deffile(2);
+            configure(1);
             char line[5];
-           int bugcode;
-            printf("Please type bug number's separated by ENTER or "
-                    "send empty line to proceed\n: ");
-            while (1){
-                fgets(line,sizeof(line),stdin);
+            int bugcode;
+            printf("Please type bug number and press ENTER\n"
+                   "you can write more numbers separated by comma and space\n"
+                   "or send empty line to exit\n: ");
+            while (fgets(line,sizeof(line),stdin)){  
                 sscanf(line,"%d",&bugcode);
-                    if (line[1]==0){
-                        break;}
-                    else {   
-                        showbug(bugcode);
-                    }
-                    printf("\n: "); 
-                    bzero(line,strlen(line));
+                if (line[1]==0){
+                    break;}
+                else {   
+                    showbug(bugcode);}
+                printf(": "); 
+                bzero(line,strlen(line));
             }
             deffile(0); //close deffile
-            //serline(0); //close serial port
+            serline(0); //close serial port
             break;}
     
  

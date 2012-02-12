@@ -1,0 +1,33 @@
+11	Wheel speed sensor, right front - open/short circuit	Wiring, wheel speed sensor, sensor rotor
+12	Wheel speed sensor, left front - open/short circuit	Wiring, wheel speed sensor, sensor rotor
+13	Wheel speed sensor, right rear - open/short circuit	Wiring, wheel speed sensor, sensor rotor
+14	Wheel speed sensor, left rear - open/short circuit	Wiring, wheel speed sensor, sensor rotor
+17	Engine speed signal	Wiring, ECM,	ABS control module
+22	Solenoid valve - front RH	Wiring, fuse, hydraulic modulator,	ABS control module
+24	Solenoid valve - front LH	Wiring, fuse, hydraulic modulator,	ABS control module
+26	Solenoid valve - rear RH	Wiring, fuse, hydraulic modulator,	ABS control module
+28	Solenoid valve - rear LH	Wiring, fuse, hydraulic modulator,	ABS control module
+29	Hydraulic modulator - hydraulic circuit, right front/left rear	Brake mechanical fault, hydraulic modulator
+30	Hydraulic modulator - hydraulic circuit, left front/right rear	Brake mechanical fault, hydraulic modulator
+32	Solenoid valve - front RH/pump motor	Hydraulic modulator, pump motor
+33	Solenoid valve - front LH/pump motor	Hydraulic modulator, pump motor
+34	Solenoid valve - rear RH/pump motor	Hydraulic modulator, pump motor
+35	Solenoid valve - rear LH/pump motor	Hydraulic modulator, pump motor
+41	Wheel speed sensor, right front - open/short circuit	Wiring, wheel speed sensor, sensor rotor
+42	Wheel speed sensor, left front - open/short circuit	Wiring, wheel speed sensor, sensor rotor
+43	Wheel speed sensor, right rear - open/short circuit	Wiring, wheel speed sensor, sensor rotor
+44	Wheel speed sensor, left rear - open/short circuit	Wiring, wheel speed sensor, sensor rotor
+45	Wheel speed sensor, right front	Wiring, wheel speed sensor, sensor rotor
+46	Wheel speed sensor, left front	Wiring, wheel speed sensor, sensor rotor
+47	Wheel speed sensor, right rear	Wiring, wheel speed sensor, sensor rotor
+48	Wheel speed sensor, left rear	Wiring, wheel speed sensor, sensor rotor
+51	System relay - open/short circuit	Wiring, fuse,	ABS control module
+52	System relay - open/short circuit	Wiring, fuse,	ABS control module
+53	Pump motor - open/short circuit	Wiring, fuse, pump motor
+54	Pump motor - open/short circuit	Wiring, fuse, pump motor
+61	ABS control module	ABS control module
+63	Supply voltage low	Wiring, battery, alternator
+82	Engine control module (ECM) - torque reduction signal	Wiring, ECM, ABS control module
+83	Engine control module (ECM) - torque reduction inhibit signal	Wiring, ECM, ABS control module
+87	Engine coolant temperature (ECT) low	Wiring,	ABS control module
+

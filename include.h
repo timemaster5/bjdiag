@@ -24,7 +24,7 @@
 //definice
 #define BUFSIZE 200
 #define BUGSIZE 50
-#define MODEMDEVICE "/dev/ttyS1"
+#define MODEMDEVICE "/dev/ttyUSB0"
 #define BAUDRATE B115200
 #define FALSE 0
 #define TRUE 1
@@ -38,7 +38,7 @@ int inputmotor=1;
 int fd, res; //seriak
 char *xSerDev = MODEMDEVICE; // do xSerDev se ulozi cesta k seriovemu portu z definici
 char *tosend = NULL; //sem se uklada text,ktery se nasledne odesila k vypsani
-char *defFileEng = "323fbj.def";
-char *defFileAbs = "323fbj.def";
+char *defFileEng = "bje.def";
+char *defFileAbs = "bja.def";
 char msg[BUFSIZE]; //vytvori pole o velikosti BUFSIZE, ukladaji se sem docasne odpovedi
 FILE *df;
