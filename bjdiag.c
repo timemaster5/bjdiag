@@ -37,7 +37,12 @@ void serline(int control){
             //set new parameters
             fcntl( fd, F_SETFL, O_SYNC); 
             memset( &newtio, 0, sizeof( newtio ));
+            //apple needs different style of configuration in this place
+            #if defined(__APPLE__) && defined(__MACH__)
+            newtio.c_cflag = ( CS8 | CLOCAL | CREAD);
+            #else
             newtio.c_cflag = ( BAUDRATE | CS8 | CLOCAL | CREAD);
+            #endif
             newtio.c_iflag = (IGNPAR);
             newtio.c_oflag = 0;
             newtio.c_lflag = 0;
@@ -201,27 +206,24 @@ void configure(int control){
                        if (debug>1) printf("DBG: Set R2 to open state\n");
                        else printf(".");
                        fflush(stdout);
-                       if (control) 
+                       if (control) { 
                            if (!strcmp(sendcmd("*B1OS2H"),"OK")){
                                    if (debug>1) printf("DBG: Set R2 to closed state\n");
                                    else printf(". DONE\n");}
-                          else fprintf(stderr,"ERR: Unable to set output 1\n");
-                      else
+                          else fprintf(stderr,"ERR: Unable to set output 1\n");}
+                      else {
                           if (!strcmp(sendcmd("*B1OS1H"),"OK")){
                                   if (debug>1) printf("DBG: Set R1 to closed state\n");
                                   else printf(". DONE\n");}
-                          else fprintf(stderr,"ERR: Unable to set output 1\n");}
+                          else fprintf(stderr,"ERR: Unable to set output 1\n");}}
                   else fprintf(stderr,"ERR: Unable to reset output 2\n");} 
                else fprintf(stderr,"ERR: Unable to set output 1\n");}
            else fprintf(stderr,"ERR: Unable to set quido for auto send\n");         
            break;
        case 2:
-           if (!strcmp(sendcmd("*B1OS1L"),"OK")){
-               if (debug>1) printf("DBG: Set R1 to open state\n");
-               if (!strcmp(sendcmd("*B1OS2L"),"OK")){
-                   if (debug>1) printf("DBG: Set R2 to open state\n");
-               }else fprintf(stderr,"ERR: Unable to set output 2\n");
-           }else fprintf(stderr,"ERR: Unable to set output 1\n");
+           if (debug) printf("DBG: turning off relays\n");
+           sendcmd("*B1OS1L");
+           sendcmd("*B1OS2L");
            serline(0);
            break;
    }
@@ -232,6 +234,15 @@ void configure(int control){
 void clean(){
     if (debug) printf("DBG: answer: %s\n",msg);
     bzero(msg,BUFSIZE); //clear mesage buffer
+}
+
+void close_all(int sig){
+    
+    stop=1;
+    cl=1;
+    deffile(0);
+    configure(2);
+    (void) signal(SIGINT, SIG_DFL);
 }
 
 void showbug(int in){
@@ -258,7 +269,6 @@ void showbug(int in){
 }
 
 void bugs(int in){
-    int bugcodes[BUGSIZE]; // pole chybovych kodu
     bugcodes[idx]=in; //save bugcode
     if (debug) 
         printf("DBG: Saving %i to the index %i\n",bugcodes[idx],idx);
@@ -274,9 +284,10 @@ void bugs(int in){
                 last=cnt;}}
         if (last) 
         for (cnt = 0; cnt < last; cnt++) { //print bugs
-            printf("%i ",bugcodes[cnt]);
-            if (cnt==last-1) 
-                printf("\n");
+            showbug(bugcodes[cnt]);
+            //printf("%i ",bugcodes[cnt]);
+           /* if (cnt==last-1) 
+                printf("\n");*/
             stop=1;}}
         //if the two values are equal, we have only one bug
     else if ((idx==1)&&(bugcodes[0]==bugcodes[1])){  
@@ -288,22 +299,60 @@ void bugs(int in){
 
 //main function
 int main(int argc, char **argv){
+    (void) signal(SIGINT, close_all); //SIGINT handling for proper port close
     //parse command line options
     switch (opts(argc, argv)){
         case 0 : //engine (default) mode
             configure(0); //open serial, configure module
             deffile(1); //open definition file
-            //engine reading routine here
-            
+            if (debug) printf("DBG: waiting for data\n");
+             printf("Please turn ignition key to the position ON without "
+            "starting the engine\n");
+            char c;
+            while (!stop){
+                if (read(fd,&c,1)>0)
+                strncat(msg, &c, 1);
+                if (c == '\r') { //if there is an end of the line
+                    if (!strncmp(msg,"*B1D",4)) {
+                        if ((msg[inputmotor+4]=='H')&&(imp==1)) {
+                            imp=0;
+                            tmr=timer(); //mezera mezi impulzy, kdyz nebezel timer tak 0
+                            if ((debug>1)&&(tmr)) printf("DBG: pause length: %f\n",tmr); 
+                            if (!run) timer();//tm_start()
+                            if(tmr > 2.5) {
+                                if (debug>1) printf("DBG: long space, new value\n");
+                                bugs(bugcode);//save the value
+                                bugcode=0;
+                            } else if (tmr > 0.5) {
+                                if (debug>1) printf("DBG: short space, continue\n");
+                            }
+                            }
+                        else if((msg[inputmotor+4]=='L')&&(imp==0)){
+                            imp=1;
+                            tmr=timer();
+                            if ((debug>1)&&(tmr)) printf("DBG: pulse length: %f\n",tmr);
+                            if (!run) timer(); //tm_start
+                            if (tmr > 1) { 
+                                    if (debug>1) printf("DBG: long impulz\n"); //new value
+                                    bugcode=bugcode+10;
+                                    }else if (tmr > 0.3) {
+                                    if(debug>1) printf("DBG: short impulz\n"); 
+                                    bugcode=bugcode+1;
+                                    } else if(debug>1) printf("DBG: unknown impulz\n");
+                            }else if (debug>1) printf("DBG: unexpeced impulz\n");
+                    }bzero(msg,BUGSIZE);    
+                    }
+                    }  
+            if (!cl){
             deffile(0); //close deffile
             configure(2); //deconfigure
+            }
             break;
         case 1: //abs mode
             configure(1); //open serial, configure module
             deffile(2); //open definition file
             
             char line[5];
-            int bugcode;
             printf("Please type bug number and press ENTER\n"
                    "you can write more numbers separated by comma and space\n"
                    "or send empty line to exit\n: ");
@@ -321,51 +370,7 @@ int main(int argc, char **argv){
             configure(2); //deconfigure module, close serial
             break;}
     
- 
-    
-    
-   
-    
-                
-  //printf("Please turn ignition key to the position ON without "
-    //      "starting the engine\n");
-  
-  char c;
-  int bugcode;
-  //while (!stop) {
-  while (0){
-      if (read(fd,&c,1)>0)
-    strncat(msg, &c, 1);
-      if (c == '\r') { //if there is an end of the line
-        if (!strncmp(msg,"*B1D",4)) {
-            if ((msg[inputmotor+4]=='H')&&(imp==1)) {
-                imp=0;
-                tmr=timer(); //mezera mezi impulzy, kdyz nebezel timer tak 0
-                if ((debug)&&(tmr)) printf("DBG: pause length: %f\n",tmr); 
-                if (!run) timer();//tm_start()
-                if(tmr > 2.5) {
-                    if (debug) printf("DBG: long space, new value\n");
-                    bugs(bugcode);//save the value
-                    bugcode=0;
-                } else if (tmr > 0.5) {
-                    if (debug) printf("DBG: short space, continue\n");
-                }
-                }
-            else if((msg[inputmotor+4]=='L')&&(imp==0)){
-                imp=1;
-                tmr=timer();
-                if ((debug)&&(tmr)) printf("DBG: pulse length: %f\n",tmr);
-                if (!run) timer(); //tm_start
-                   if (tmr > 1) { 
-                        if (debug) printf("DBG: long impulz\n"); //new value
-                        bugcode=bugcode+10;
-                        }else if (tmr > 0.3) {
-                         if(debug) printf("DBG: short impulz\n"); 
-                         bugcode=bugcode+1;
-                        } else if(debug) printf("DBG: unknown impulz\n");
-                  }else if (debug) printf("DBG: unexpeced impulz\n");
-        }bzero(msg,BUGSIZE);    
-        }
-        }   
+
 return 0;
 }
+

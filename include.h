@@ -35,10 +35,13 @@ struct termios oldtio,newtio; //tohle pro sockety
 double tmr;
 int stop=0,debug=0,run=0,imp=1,idx=0; //debug defaultne vypnut,index pole na 0
 int inputmotor=1;
+int bugcode;
+int cl = 0;
 int fd, res; //seriak
 char *xSerDev = MODEMDEVICE; // do xSerDev se ulozi cesta k seriovemu portu z definici
 char *tosend = NULL; //sem se uklada text,ktery se nasledne odesila k vypsani
 char *defFileEng = "bje.def";
 char *defFileAbs = "bja.def";
 char msg[BUFSIZE]; //vytvori pole o velikosti BUFSIZE, ukladaji se sem docasne odpovedi
+int bugcodes[BUGSIZE]; // pole chybovych kodu
 FILE *df;
