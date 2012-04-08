@@ -270,6 +270,8 @@ void showbug(int in){
 
 void bugs(int in){
     bugcodes[idx]=in; //save bugcode
+    //we need to kill waiting thread if bug is received
+    int pthread_cancel(pthread_t waiting);
     if (debug) 
         printf("DBG: Saving %i to the index %i\n",bugcodes[idx],idx);
     if (idx > 1) { //if we have more then two values, we test whether the end
@@ -297,6 +299,15 @@ void bugs(int in){
     idx++;  //increase index
 }
 
+//wait function
+void *wait_function()
+{
+    sleep(15);
+    printf("No bugs received\n");
+    close_all(SIGINT);
+    return NULL;
+}
+
 //main function
 int main(int argc, char **argv){
     (void) signal(SIGINT, close_all); //SIGINT handling for proper port close
@@ -308,6 +319,10 @@ int main(int argc, char **argv){
             if (debug) printf("DBG: waiting for data\n");
              printf("Please turn ignition key to the position ON without "
             "starting the engine\n");
+            //define new waiting thread
+            pthread_t waiting;
+            //new thread with waiting timer
+            pthread_create( &waiting, NULL, wait_function, NULL);
             char c;
             while (!stop){
                 if (read(fd,&c,1)>0)
@@ -326,7 +341,7 @@ int main(int argc, char **argv){
                             } else if (tmr > 0.5) {
                                 if (debug>1) printf("DBG: short space, continue\n");
                             }
-                            }
+                        }
                         else if((msg[inputmotor+4]=='L')&&(imp==0)){
                             imp=1;
                             tmr=timer();
@@ -336,9 +351,9 @@ int main(int argc, char **argv){
                                     if (debug>1) printf("DBG: long impulz\n"); //new value
                                     bugcode=bugcode+10;
                                     }else if (tmr > 0.3) {
-                                    if(debug>1) printf("DBG: short impulz\n"); 
-                                    bugcode=bugcode+1;
-                                    } else if(debug>1) printf("DBG: unknown impulz\n");
+                                        if(debug>1) printf("DBG: short impulz\n"); 
+                                        bugcode=bugcode+1;
+                                    } else  if(debug>1) printf("DBG: unknown impulz\n");                                 
                             }else if (debug>1) printf("DBG: unexpeced impulz\n");
                     }bzero(msg,BUGSIZE);    
                     }
